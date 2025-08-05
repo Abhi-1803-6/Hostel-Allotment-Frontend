@@ -1,0 +1,30 @@
+.App {
+  text-align: center;
+}
+
+nav {
+  background-color: #ffffff;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 20px; /* Adds space between nav links */
+}
+
+nav a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+nav a:hover {
+  background-color: #f1f3f5;
+}
+
+main {
+  padding: 20px;
+}
