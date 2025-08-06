@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import api from '../api/axios'; 
 
 const AuthContext = createContext(null);
 
@@ -10,7 +11,7 @@ export const AuthProvider = ({ children }) => {
     const [adminInfo, setAdminInfo] = useState(() => JSON.parse(localStorage.getItem('adminInfo')) || null);
 
     const loginUser = async (formData) => {
-        const { data } = await axios.post('http://localhost:5000/api/auth/login', formData);
+        const { data } = await api.post('/api/auth/login', formData);
         localStorage.setItem('userInfo', JSON.stringify(data));
         setUserInfo(data);
         toast.success('Login successful!');
@@ -24,7 +25,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const loginAdmin = async (formData) => {
-        const { data } = await axios.post('http://localhost:5000/api/admin/login', formData);
+        const { data } = await api.post('/api/admin/login', formData);
         localStorage.setItem('adminInfo', JSON.stringify(data));
         setAdminInfo(data);
         toast.success('Admin login successful!');
