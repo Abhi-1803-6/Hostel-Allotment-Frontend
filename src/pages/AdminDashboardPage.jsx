@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+//import axios from 'axios';
 import { toast } from 'react-toastify';
-import io from 'socket.io-client';
+//import io from 'socket.io-client';
+import socket from '../socket';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
 
 // MUI Imports
 import { Button, Container, Typography, Box, Paper, TextField, List, ListItem, ListItemText, CircularProgress, Divider } from '@mui/material';
 
-const socket = io('http://localhost:5000');
+//const socket = io('http://localhost:5000');
 
 function AdminDashboardPage() {
    const { adminInfo, logoutAdmin } = useAuth();
@@ -29,7 +31,7 @@ function AdminDashboardPage() {
     // This function is defined before being used in useEffect
     const fetchRooms = async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/rooms');
+            const { data } = await api.get('/api/rooms');
             setRooms(data);
         } catch (error) {
             console.error('Could not fetch rooms', error);
@@ -39,7 +41,7 @@ function AdminDashboardPage() {
     // This function is defined before being used in useEffect
     const checkStatus = async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/allotment/admin-status');
+            const { data } = await api.get('/api/allotment/admin-status');
             setIsAllotmentRunning(data.allotmentInProgress);
         } catch(error) {
             console.error('Could not fetch allotment status', error);
@@ -47,6 +49,7 @@ function AdminDashboardPage() {
     };
 
     useEffect(() => {
+        socket.connect(); // Manually connect the socket when the component mounts
         fetchRooms();
         checkStatus();
 
@@ -60,6 +63,7 @@ function AdminDashboardPage() {
         });
 
         return () => {
+            socket.disconnect(); // Clean up the socket connection on unmount
             socket.off('allotment_finished');
             socket.off('allotment_cancelled');
         };
@@ -75,7 +79,7 @@ function AdminDashboardPage() {
         if (!window.confirm('This will delete the old rank list and upload a new one. Are you sure?')) return;
         try {
             const ranks = JSON.parse(ranksJson);
-            await axios.post('http://localhost:5000/api/admin/upload-ranks', ranks, config);
+            await api.post('/api/admin/upload-ranks', ranks, config);
             toast.success('Rank list uploaded successfully!');
             setRanksJson('');
         } catch (error) {
@@ -88,7 +92,7 @@ function AdminDashboardPage() {
         if (!window.confirm('This will delete the old room list and upload a new one. Are you sure?')) return;
         try {
             const roomData = JSON.parse(roomsJson);
-            await axios.post('http://localhost:5000/api/admin/upload-rooms', roomData, config);
+            await api.post('/api/admin/upload-rooms', roomData, config);
             toast.success('Room list uploaded successfully!');
             setRoomsJson('');
             fetchRooms();
@@ -100,7 +104,7 @@ function AdminDashboardPage() {
     const handleLockGroups = async () => {
         if (!window.confirm('Are you sure? This will lock all groups.')) return;
         try {
-            const { data } = await axios.post('http://localhost:5000/api/admin/lock-groups', {}, config);
+            const { data } = await api.post('/api/admin/lock-groups', {}, config);
             toast.success(data.message);
         } catch (error) {
             toast.error(error.response.data.message);
@@ -110,7 +114,7 @@ function AdminDashboardPage() {
     const handleUnlockGroups = async () => {
         if (!window.confirm('Are you sure you want to unlock all groups?')) return;
         try {
-            const { data } = await axios.post('http://localhost:5000/api/admin/unlock-groups', {}, config);
+            const { data } = await api.post('/api/admin/unlock-groups', {}, config);
             toast.success(data.message);
         } catch (error) {
             toast.error(error.response.data.message);
@@ -120,7 +124,7 @@ function AdminDashboardPage() {
     const handleStartAllotment = async () => {
         if (!window.confirm('START ALLOTMENT? This action cannot be undone.')) return;
         try {
-            const { data } = await axios.post('http://localhost:5000/api/allotment/start');
+            const { data } = await api.post('/api/allotment/start');
             toast.info(data.message);
             setIsAllotmentRunning(true);
         } catch (error) {
@@ -131,7 +135,7 @@ function AdminDashboardPage() {
      const handleCancelAllotment = async () => {
         if (!window.confirm('Are you sure you want to cancel the running allotment? This will reset any rooms allotted so far.')) return;
         try {
-            const { data } = await axios.post('http://localhost:5000/api/allotment/cancel');
+            const { data } = await api.post('/api/allotment/cancel');
             toast.warning(data.message);
             setIsAllotmentRunning(false);
         } catch (error) {
@@ -146,7 +150,7 @@ function AdminDashboardPage() {
         }
         setGroupsLoading(true);
         try {
-            const { data } = await axios.get('http://localhost:5000/api/admin/groups', config);
+            const { data } = await api.get('/api/admin/groups', config);
             setAllGroups(data);
             setShowGroups(true);
         } catch (error) {

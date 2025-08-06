@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import api from '../api/axios'; 
 
 // MUI Imports
 import { Button, TextField, Container, Typography, Box, Paper, Link } from '@mui/material';
@@ -23,7 +24,7 @@ function RegisterPage() {
     const onSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/auth/register', formData);
+            await api.post('/api/auth/register', formData);
             toast.success('Registration successful! Please login.');
             navigate('/login');
         } catch (err) {

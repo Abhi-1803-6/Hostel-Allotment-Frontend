@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+//import axios from 'axios';
 import { toast } from 'react-toastify';
-import io from 'socket.io-client';
+//import io from 'socket.io-client';
+import socket from '../socket';
 import CountdownTimer from '../components/CountdownTimer';
 import { Container, Paper, Typography, Box, Button, CircularProgress, List, ListItem, ListItemText, Divider, TextField, Select, MenuItem, FormControl, InputLabel, Grid } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
 
-const socket = io('http://localhost:5000');
+//const socket = io('http://localhost:5000');
 
 // The RoomSelection component remains unchanged
 function RoomSelection({ group, userInfo, onSelectionSuccess, deadline }) {
@@ -15,7 +17,7 @@ function RoomSelection({ group, userInfo, onSelectionSuccess, deadline }) {
 
     useEffect(() => {
         const fetchAvailableRooms = async () => {
-            const { data } = await axios.get('http://localhost:5000/api/rooms');
+            const { data } = await api.get('/api/rooms');
             setAvailableRooms(data.filter(room => room.isAvailable && room.capacity === group.size));
         };
         fetchAvailableRooms();
@@ -25,7 +27,7 @@ function RoomSelection({ group, userInfo, onSelectionSuccess, deadline }) {
         if (!window.confirm('Are you sure you want to select this room?')) return;
         try {
             const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-            await axios.post('http://localhost:5000/api/allotment/select-room', { roomId }, config);
+            await api.post('/api/allotment/select-room', { roomId }, config);
             toast.success('Room selected successfully!');
             onSelectionSuccess();
         } catch (error) {
@@ -72,14 +74,14 @@ function DashboardPage() {
         setLoading(true);
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            const { data: groupData } = await axios.get('http://localhost:5000/api/groups/my-group', config);
+            const { data: groupData } = await api.get('/api/groups/my-group', config);
             setGroup(groupData);
             setInvitations([]);
         } catch (error) {
             setGroup(null);
             try {
                 const config = { headers: { Authorization: `Bearer ${token}` } };
-                const { data: invitationData } = await axios.get('http://localhost:5000/api/invitations', config);
+                const { data: invitationData } = await api.get('/api/invitations', config);
                 setInvitations(invitationData);
             } catch (invitationError) {
                 console.error("Could not fetch invitations");
@@ -90,6 +92,7 @@ function DashboardPage() {
     };
 
     useEffect(() => {
+        socket.connect(); // Manually connect the socket when the component mounts
         const storedUserInfo = JSON.parse(localStorage.getItem('userInfo'));
         if (!storedUserInfo) {
             navigate('/login');
@@ -100,7 +103,7 @@ function DashboardPage() {
         const checkTurnStatus = async () => {
             try {
                 const config = { headers: { Authorization: `Bearer ${storedUserInfo.token}` } };
-                const { data } = await axios.get('http://localhost:5000/api/allotment/status', config);
+                const { data } = await api.get('/api/allotment/status', config);
                 if (data.isMyTurn) {
                     setIsMyTurn(true);
                     setDeadline(data.deadline);
@@ -140,6 +143,7 @@ function DashboardPage() {
         checkTurnStatus();
 
         return () => {
+            socket.disconnect(); // Clean up the socket connection on unmount
             socket.off('connect', onConnect);
             socket.off('your_turn', onYourTurn);
             socket.off('turn_ended', onTurnEnded);
@@ -155,7 +159,7 @@ function DashboardPage() {
         e.preventDefault();
         try {
             const config = { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${userInfo.token}` } };
-            const { data } = await axios.post('http://localhost:5000/api/groups/create', { size: groupSize }, config);
+            const { data } = await api.post('/api/groups/create', { size: groupSize }, config);
             toast.success('Group created successfully!');
             fetchData(userInfo.token);
         } catch (error) { toast.error(`Error creating group: ${error.response.data.message}`); }
@@ -164,7 +168,7 @@ function DashboardPage() {
         e.preventDefault();
         try {
             const config = { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${userInfo.token}` } };
-            const { data } = await axios.post(`http://localhost:5000/api/groups/${group._id}/invite`, { rollNumberToInvite }, config);
+            const { data } = await api.post(`/api/groups/${group._id}/invite`, { rollNumberToInvite }, config);
             toast.success(data.message);
             setRollNumberToInvite('');
         } catch (error) { toast.error(`Error inviting member: ${error.response.data.message}`); }
@@ -173,7 +177,7 @@ function DashboardPage() {
         if (!window.confirm('Are you sure you want to leave/dissolve this group?')) return;
         try {
             const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-            const { data } = await axios.post('http://localhost:5000/api/groups/leave', {}, config);
+            const { data } = await api.post('/api/groups/leave', {}, config);
             toast.success(data.message);
             fetchData(userInfo.token);
         } catch (error) { toast.error(`Error leaving group: ${error.response.data.message}`); }
@@ -182,7 +186,7 @@ function DashboardPage() {
         if (!window.confirm('Are you sure you want to remove this member?')) return;
         try {
             const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-            const { data } = await axios.delete(`http://localhost:5000/api/groups/remove/${memberId}`, config);
+            const { data } = await api.delete(`/api/groups/remove/${memberId}`, config);
             toast.success(data.message);
             fetchData(userInfo.token);
         } catch (error) { toast.error(`Error removing member: ${error.response.data.message}`); }
@@ -190,7 +194,7 @@ function DashboardPage() {
     const handleInvitationResponse = async (invitationId, action) => {
         try {
             const config = { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${userInfo.token}`}};
-            const { data } = await axios.post(`http://localhost:5000/api/invitations/${invitationId}/respond`, { action }, config);
+            const { data } = await api.post(`/api/invitations/${invitationId}/respond`, { action }, config);
             toast.success(data.message);
             fetchData(userInfo.token);
         } catch (error) { toast.error(`Error: ${error.response.data.message}`); }
