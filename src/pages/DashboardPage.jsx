@@ -92,12 +92,12 @@ function DashboardPage() {
     };
 
     useEffect(() => {
-        socket.connect(); // Manually connect the socket when the component mounts
         const storedUserInfo = JSON.parse(localStorage.getItem('userInfo'));
         if (!storedUserInfo) {
             navigate('/login');
             return;
         }
+        socket.connect(); // Manually connect the socket when the component mounts
         setUserInfo(storedUserInfo);
 
         const checkTurnStatus = async () => {
