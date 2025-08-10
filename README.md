@@ -2,7 +2,7 @@
 
 This is the React client-side application for the Hostel Allotment System. It provides a modern, responsive user interface for both students and administrators to interact with the allotment process.
 
-**Live Demo:** [https://hostel-allotment-frontend-22bcs004.vercel.app/](https://hostel-allotment-frontend.vercel.app) 
+**Live Demo:** [https://hostel-allotment-frontend-22bcs004.vercel.app/](https://hostel-allotment-frontend-22bcs004.vercel.app/) 
 ---
 
 ### Key Features
