@@ -142,6 +142,21 @@ function AdminDashboardPage() {
             toast.error(error.response?.data?.message || "Failed to cancel allotment.");
         }
     };
+    
+    const handleResetAllotment = async () => {
+        if (!window.confirm('Are you sure you want to reset the entire allotment state? All allotted rooms will be cleared and groups will be unlocked.')) return;
+        try {
+            const config = { headers: { Authorization: `Bearer ${adminInfo.token}` } };
+            const { data } = await axios.post('http://localhost:5000/api/admin/reset-allotment', {}, config);
+            toast.success(data.message);
+            // Refresh the page state
+            checkStatus();
+            setShowGroups(false);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to reset state.');
+        }
+    };
+
 
     const handleViewGroups = async () => {
         if (showGroups) {
@@ -167,6 +182,12 @@ function AdminDashboardPage() {
                     <Typography component="h1" variant="h4">Admin Dashboard</Typography>
                     <Button variant="outlined" onClick={handleLogout}>Logout</Button>
                 </Box>
+                 <Paper elevation={2} sx={{ p: 2, my: 3, border: '1px solid #1976d2' }}>
+                    <Typography variant="h6" gutterBottom>🔄 Demo Control</Typography>
+                    <Button variant="contained" color="info" onClick={handleResetAllotment}>
+                        Reset Demo State
+                    </Button>
+                </Paper>
 
                 <Paper elevation={2} sx={{ p: 2, border: '1px solid #d32f2f' }}>
                     <Typography variant="h6" gutterBottom>🔒 Allotment Control</Typography>
