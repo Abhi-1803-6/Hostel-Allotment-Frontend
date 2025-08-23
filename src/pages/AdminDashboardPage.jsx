@@ -74,88 +74,82 @@ function AdminDashboardPage() {
         navigate('/admin-login'); 
     };
 
+     const handleApiCall = async (apiCall, successMessage) => {
+        try {
+            if (!adminInfo?.token) {
+                throw new Error("Authentication error. Please log in again.");
+            }
+            const config = { headers: { Authorization: `Bearer ${adminInfo.token}` } };
+            const { data } = await apiCall(config);
+            if(successMessage) toast.success(successMessage);
+            return data;
+        } catch (error) {
+            if (error.response) {
+                toast.error(error.response.data.message || 'An error occurred on the server.');
+            } else {
+                toast.error(error.message || 'An unexpected error occurred.');
+            }
+        }
+    };
+
     const handleUploadRanks = async (e) => {
         e.preventDefault();
         if (!window.confirm('This will delete the old rank list and upload a new one. Are you sure?')) return;
-        try {
-            const ranks = JSON.parse(ranksJson);
-            await api.post('/api/admin/upload-ranks', ranks, config);
-            toast.success('Rank list uploaded successfully!');
-            setRanksJson('');
-        } catch (error) {
-            toast.error('Error uploading ranks. Please ensure the JSON is valid.');
-        }
+       const ranks = JSON.parse(ranksJson);
+        handleApiCall(
+            (config) => api.post('/api/admin/upload-ranks', ranks, config),
+            'Rank list uploaded successfully!'
+        ).then(() => setRanksJson(''));
     };
     
     const handleUploadRooms = async (e) => {
         e.preventDefault();
         if (!window.confirm('This will delete the old room list and upload a new one. Are you sure?')) return;
-        try {
-            const roomData = JSON.parse(roomsJson);
-            await api.post('/api/admin/upload-rooms', roomData, config);
-            toast.success('Room list uploaded successfully!');
-            setRoomsJson('');
-            fetchRooms();
-        } catch (error) {
-            toast.error('Error uploading rooms. Please ensure the JSON is valid.');
-        }
+        const roomData = JSON.parse(roomsJson);
+        handleApiCall(
+            (config) => api.post('/api/admin/upload-rooms', roomData, config),
+            'Room list uploaded successfully!'
+        ).then(() => { setRoomsJson(''); fetchRooms(); });
     };
 
     const handleLockGroups = async () => {
         if (!window.confirm('Are you sure? This will lock all groups.')) return;
-        try {
-            const { data } = await api.post('/api/admin/lock-groups', {}, config);
-            toast.success(data.message);
-        } catch (error) {
-            toast.error(error.response.data.message);
-        }
+         handleApiCall(
+            (config) => api.post('/api/admin/lock-groups', {}, config),
+            'Groups locked successfully!'
+        );
     };
 
     const handleUnlockGroups = async () => {
         if (!window.confirm('Are you sure you want to unlock all groups?')) return;
-        try {
-            const { data } = await api.post('/api/admin/unlock-groups', {}, config);
-            toast.success(data.message);
-        } catch (error) {
-            toast.error(error.response.data.message);
-        }
+         handleApiCall(
+            (config) => api.post('/api/admin/unlock-groups', {}, config),
+            'Groups unlocked successfully!'
+        );
     };
 
     const handleStartAllotment = async () => {
         if (!window.confirm('START ALLOTMENT? This action cannot be undone.')) return;
-        try {
-            const { data } = await api.post('/api/allotment/start');
-            toast.info(data.message);
-            setIsAllotmentRunning(true);
-        } catch (error) {
-            toast.error(error.response.data.message);
-        }
+       handleApiCall(
+            (config) => api.post('/api/allotment/start', {}, config),
+            'Allotment process started!'
+        ).then(() => setIsAllotmentRunning(true));
     };
 
      const handleCancelAllotment = async () => {
         if (!window.confirm('Are you sure you want to cancel the running allotment? This will reset any rooms allotted so far.')) return;
-        try {
-            const { data } = await api.post('/api/allotment/cancel');
-            toast.warning(data.message);
-            setIsAllotmentRunning(false);
-        } catch (error) {
-            toast.error(error.response?.data?.message || "Failed to cancel allotment.");
-        }
+        handleApiCall(
+            (config) => api.post('/api/allotment/cancel', {}, config),
+            'Allotment cancelled successfully.'
+        ).then(() => setIsAllotmentRunning(false));
     };
     
     const handleResetAllotment = async () => {
         if (!window.confirm('Are you sure you want to reset the entire allotment state? All allotted rooms will be cleared and groups will be unlocked.')) return;
-        try {
-            const config = { headers: { Authorization: `Bearer ${adminInfo.token}` } };
-             const { data } = await api.post('/api/admin/reset-allotment', {}, config);
-            toast.success(data.message);
-            // Refresh the page state
-            checkStatus();
-            setShowGroups(false);
-            fetchRooms();
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to reset state.');
-        }
+        handleApiCall(
+            (config) => api.post('/api/admin/reset-allotment', {}, config),
+            'Demo state has been reset!'
+        ).then(() => { checkStatus(); setShowGroups(false); });
     };
 
 
@@ -165,15 +159,12 @@ function AdminDashboardPage() {
             return;
         }
         setGroupsLoading(true);
-        try {
-            const { data } = await api.get('/api/admin/groups', config);
+        const data = await handleApiCall((config) => api.get('/api/admin/groups', config));
+        if (data) {
             setAllGroups(data);
             setShowGroups(true);
-        } catch (error) {
-            toast.error('Could not fetch groups.');
-        } finally {
-            setGroupsLoading(false);
         }
+        setGroupsLoading(false);
     };
 
     return (
