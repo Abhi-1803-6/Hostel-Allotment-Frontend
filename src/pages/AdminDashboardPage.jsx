@@ -147,11 +147,12 @@ function AdminDashboardPage() {
         if (!window.confirm('Are you sure you want to reset the entire allotment state? All allotted rooms will be cleared and groups will be unlocked.')) return;
         try {
             const config = { headers: { Authorization: `Bearer ${adminInfo.token}` } };
-            const { data } = await axios.post('http://localhost:5000/api/admin/reset-allotment', {}, config);
+             const { data } = await api.post('/api/admin/reset-allotment', {}, config);
             toast.success(data.message);
             // Refresh the page state
             checkStatus();
             setShowGroups(false);
+            fetchRooms();
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to reset state.');
         }
