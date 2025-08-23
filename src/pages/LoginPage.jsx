@@ -3,6 +3,7 @@ import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
 
 // MUI Imports
 import { Button, TextField, Container, Typography, Box, Paper, Link } from '@mui/material';
@@ -17,15 +18,22 @@ function LoginPage() {
     const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
     const onSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            await loginUser(formData);
-            navigate('/dashboard');
-            
-        } catch (err) {
-            toast.error(err.response?.data?.message || 'An error occurred');
-        }
-    };
+    e.preventDefault();
+    try {
+        console.log("Attempting debug login...");
+        // Temporarily call the debug endpoint directly
+        const res = await api.post('/api/auth/debug-login', formData);
+
+        // If it succeeds, manually set localStorage and navigate
+        localStorage.setItem('userInfo', JSON.stringify(res.data));
+        toast.success("Debug login successful!");
+        navigate('/dashboard');
+        window.location.reload();
+
+    } catch (err) {
+        toast.error(err.response?.data?.message || 'An error occurred during debug login');
+    }
+};
 
     return (
         <Container component="main" maxWidth="xs">
