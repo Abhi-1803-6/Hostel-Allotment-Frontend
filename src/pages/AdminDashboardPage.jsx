@@ -95,7 +95,7 @@ function AdminDashboardPage() {
 
     const handleUploadRanks = async (e) => {
         e.preventDefault();
-        if (!window.confirm('This will delete the old rank list and upload a new one. Are you sure?')) return;
+        if (!window.confirm('WARNING: This will delete ALL existing students, groups, and invitations and start a fresh session. Are you sure?')) return;
        const ranks = JSON.parse(ranksJson);
         handleApiCall(
             (config) => api.post('/api/admin/upload-ranks', ranks, config),
@@ -272,7 +272,7 @@ function AdminDashboardPage() {
                 <Paper elevation={2} sx={{ my: 3, p: 2 }}>
                     <Typography variant="h6" gutterBottom>📊 Upload Rank List</Typography>
                      <Box component="form" onSubmit={handleUploadRanks} sx={{ mt: 2 }}>
-                        <Typography variant="body2" gutterBottom>{'Paste an array of JSON objects. Format: `[{"rollNumber": "B21CS001", "rank": 1}]`'}</Typography>
+                        <Typography variant="body2" gutterBottom>{'Paste an array of JSON objects. Format: `[{"rollNumber": "22BCS001", "rank": 1}]`'}</Typography>
                         <TextField
                             fullWidth
                             multiline
@@ -280,7 +280,7 @@ function AdminDashboardPage() {
                             value={ranksJson}
                             onChange={(e) => setRanksJson(e.target.value)}
                             disabled={isAllotmentRunning}
-                            placeholder='[{"rollNumber": "B21CS001", "rank": 1}]'
+                            placeholder='[{"rollNumber": "22BCS001", "rank": 1}]'
                             required
                         />
                         <Button type="submit" variant="contained" sx={{ mt: 2 }} disabled={isAllotmentRunning}>Upload Ranks</Button>
