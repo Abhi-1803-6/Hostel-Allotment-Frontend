@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
 // MUI Imports
-import { Button, Container, Typography, Box, Paper, TextField, List, ListItem, ListItemText, CircularProgress, Divider } from '@mui/material';
+import { Button, Container, Typography, Box, Paper, TextField, List, ListItem, ListItemText, CircularProgress, Divider, Switch, FormControlLabel } from '@mui/material';
 
 //const socket = io('http://localhost:5000');
 
@@ -22,7 +22,8 @@ function AdminDashboardPage() {
     const [showGroups, setShowGroups] = useState(false);
     const [isAllotmentRunning, setIsAllotmentRunning] = useState(false);
     const [groupsLoading, setGroupsLoading] = useState(false);
-    
+    const [showOnlyAvailable, setShowOnlyAvailable] = useState(true);
+
     const config = {
         headers: {
             Authorization: `Bearer ${adminInfo?.token}`,
@@ -166,6 +167,7 @@ function AdminDashboardPage() {
         }
         setGroupsLoading(false);
     };
+     const roomsToDisplay = showOnlyAvailable ? rooms.filter(room => room.isAvailable) : rooms;
 
     return (
         <Container sx={{ mt: 4, mb: 4 }}>
@@ -237,9 +239,33 @@ function AdminDashboardPage() {
                         />
                         <Button type="submit" variant="contained" sx={{ mt: 2 }} disabled={isAllotmentRunning}>Upload Room List</Button>
                     </Box>
-                    <Typography variant="subtitle1" sx={{ mt: 2 }} >Currently Available Rooms ({rooms.length})</Typography>
+                    <Divider sx={{ my: 2 }} />
+
+                      <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                        <Typography variant="subtitle1" sx={{ mt: 2 }}>
+                            {showOnlyAvailable ? `Available Rooms (${roomsToDisplay.length})` : `All Rooms (${roomsToDisplay.length})`}
+                        </Typography>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={showOnlyAvailable}
+                                    onChange={(e) => setShowOnlyAvailable(e.target.checked)}
+                                    name="showOnlyAvailable"
+                                    color="primary"
+                                />
+                            }
+                            label="Show Only Available"
+                        />
+                    </Box>
                     <List dense>
-                        {rooms.map(room => (<ListItem key={room._id}><ListItemText primary={`${room.roomNumber} (Capacity: ${room.capacity})`} /></ListItem>))}
+                        {roomsToDisplay.length > 0 ? roomsToDisplay.map(room => (
+                            <ListItem key={room._id}>
+                                <ListItemText 
+                                    primary={`${room.roomNumber} (Capacity: ${room.capacity})`} 
+                                    secondary={room.isAvailable ? <Typography component="span" color="green">Available</Typography> : <Typography component="span" color="red">Allotted</Typography>}
+                                />
+                            </ListItem>
+                        )) : <ListItem><ListItemText primary="No rooms to display." /></ListItem>}
                     </List>
                 </Paper>
 
