@@ -5,24 +5,28 @@ import { useAuth } from '../context/AuthContext'; // 1. Import the useAuth hook
 
 // MUI Imports
 import { Button, TextField, Container, Typography, Box, Paper } from '@mui/material';
+import { LoadingButton } from '@mui/lab';
 
 function AdminLoginPage() {
     const navigate = useNavigate();
     const { loginAdmin } = useAuth(); // 2. Get the loginAdmin function from the context
     const [formData, setFormData] = useState({ email: '', password: '' });
-
+    const [loading, setLoading] = useState(false);
     const onChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
     const onSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
         try {
             // 3. Use the context function to handle the login
             await loginAdmin(formData);
             navigate('/admin/dashboard');
         } catch (error) {
             toast.error(error.response?.data?.message || 'Invalid credentials');
+        } finally {
+            setLoading(false); // 4. Set loading to false
         }
     };
 
@@ -44,6 +48,7 @@ function AdminLoginPage() {
                         autoFocus
                         value={formData.email}
                         onChange={onChange}
+                        disabled={loading}
                     />
                     <TextField
                         margin="normal"
@@ -56,15 +61,17 @@ function AdminLoginPage() {
                         autoComplete="current-password"
                         value={formData.password}
                         onChange={onChange}
+                        disabled={loading}
                     />
-                    <Button
+                     <LoadingButton
                         type="submit"
                         fullWidth
                         variant="contained"
                         sx={{ mt: 3, mb: 2 }}
+                        loading={loading}
                     >
                         Login
-                    </Button>
+                    </LoadingButton>
                 </Box>
             </Paper>
         </Container>
