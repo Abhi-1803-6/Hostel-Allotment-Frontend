@@ -1,38 +1,34 @@
 import React, { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import axios from 'axios';
+//import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
 // MUI Imports
 import { Button, TextField, Container, Typography, Box, Paper, Link } from '@mui/material';
-
+import { LoadingButton } from '@mui/lab'; 
 
 function LoginPage() {
     const { loginUser } = useAuth(); 
     const navigate = useNavigate();
     const [formData, setFormData] = useState({ rollNumber: '', password: '' });
+    const [loading, setLoading] = useState(false);
     const { rollNumber, password } = formData;
 
     const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
     const onSubmit = async (e) => {
     e.preventDefault();
-    try {
-        console.log("Attempting debug login...");
-        // Temporarily call the debug endpoint directly
-        const res = await api.post('/api/auth/debug-login', formData);
-
-        // If it succeeds, manually set localStorage and navigate
-        localStorage.setItem('userInfo', JSON.stringify(res.data));
-        toast.success("Debug login successful!");
-        navigate('/dashboard');
-        window.location.reload();
-
-    } catch (err) {
-        toast.error(err.response?.data?.message || 'An error occurred during debug login');
-    }
+    setLoading(true);
+   try {
+            await loginUser(formData);
+            navigate('/dashboard');
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'An error occurred');
+        } finally {
+            setLoading(false); // 4. Set loading to false after response (or error)
+        }
 };
 
     return (
@@ -52,6 +48,7 @@ function LoginPage() {
                         autoFocus
                         value={rollNumber}
                         onChange={onChange}
+                        disabled={loading}
                     />
                     <TextField
                         margin="normal"
@@ -63,15 +60,17 @@ function LoginPage() {
                         id="password"
                         value={password}
                         onChange={onChange}
+                        disabled={loading}
                     />
-                    <Button
+                    <LoadingButton
                         type="submit"
                         fullWidth
                         variant="contained"
                         sx={{ mt: 3, mb: 2 }}
+                        loading={loading}
                     >
                         Login
-                    </Button>
+                    </LoadingButton>
                     <Link component={RouterLink} to="/register" variant="body2">
                         {"Don't have an account? Register"}
                     </Link>
