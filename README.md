@@ -15,9 +15,9 @@ You can log in as any of the following users. For the best experience, it is rec
 | Role | Identifier (Email / Roll Number) | Password | Notes |
 | :--- | :--- | :--- | :--- |
 | **Admin** | `admin@example.com` | `adminpass123` | Manages the system. |
-| **Group 1 Leader(A)** | `22BCS001` *(or their roll number)* | `A`| **Rank 1** |
-| **Group 2 Leader(D)** | `22BCS004` *(or their roll number)* | `D`| Rank 4 |
-| **Group 3 Leader(G)** | `22BCS007` *(or their roll number)* | `G`| Rank 7 |
+| **Group 1 Leader(A)** | `22BCS001`  | `A`| **Rank 1** |
+| **Group 2 Leader(D)** | `22BCS004`  | `D`| Rank 4 |
+| **Group 3 Leader(G)** | `22BCS007`  | `G`| Rank 7 |
 
 *(Note: Other student accounts exist to fill the groups, but these are the key accounts for testing the allotment flow.)*
 
