@@ -43,7 +43,7 @@ function HomePage() {
           component="h1" 
           variant="h2" 
           gutterBottom 
-          sx={{ fontWeight: 'bold' }}
+          sx={{ fontWeight: 'bold', fontSize: { xs: '2rem', sm: '3rem', md: '4rem' } }}
         >
           Hostel Allotment System
         </Typography>
